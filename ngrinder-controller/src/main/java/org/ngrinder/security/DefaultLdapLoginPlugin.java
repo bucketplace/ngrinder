@@ -93,7 +93,7 @@ public class DefaultLdapLoginPlugin implements OnLoginRunnable {
 		if (!userFilter.startsWith("(") || !userFilter.endsWith(")")) {
 			userFilter = "(" + userFilter + ")";
 		}
-		String userIdFilter = String.format("(CN=%s)", userId);
+		String userIdFilter = String.format("(sAMAccountName=%s)", userId);
 
 		if (isBlank(userFilter) && isBlank(userId)) {
 			return EMPTY;
