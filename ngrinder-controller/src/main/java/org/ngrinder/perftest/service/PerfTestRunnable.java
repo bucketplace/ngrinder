@@ -204,45 +204,42 @@ public class PerfTestRunnable implements ControllerConstants {
 	 *
 	 * @param perfTest perftest instance;
 	 */
-	public class YourClassName {
-		private static final Logger LOG = LoggerFactory.getLogger(YourClassName.class);
-	
-		public void doTest(final PerfTest perfTest) {
-			SingleConsole singleConsole = null;
-			try {
-				LOG.info("Starting test preparation for PerfTest: {}", perfTest.getId());
+	public void doTest(final PerfTest perfTest) {
+        SingleConsole singleConsole = null;
+        try {
+            LOG.info("Starting test preparation for PerfTest: {}", perfTest.getId());
 
-				GrinderProperties grinderProperties = perfTestService.prepareTest(perfTest);
-				LOG.info("Test preparation completed for PerfTest: {}", perfTest.getId());
+            GrinderProperties grinderProperties = perfTestService.prepareTest(perfTest);
+            LOG.info("Test preparation completed for PerfTest: {}", perfTest.getId());
 
-				singleConsole = startConsole(perfTest);
-				LOG.info("Console started for PerfTest: {}", perfTest.getId());
+            singleConsole = startConsole(perfTest);
+            LOG.info("Console started for PerfTest: {}", perfTest.getId());
 
-				startAgentsOn(perfTest, grinderProperties, checkCancellation(singleConsole));
-				LOG.info("Agents started for PerfTest: {}", perfTest.getId());
+            startAgentsOn(perfTest, grinderProperties, checkCancellation(singleConsole));
+            LOG.info("Agents started for PerfTest: {}", perfTest.getId());
 
-				distributeFileOn(perfTest, checkCancellation(singleConsole));
-				LOG.info("Files distributed for PerfTest: {}", perfTest.getId());
+            distributeFileOn(perfTest, checkCancellation(singleConsole));
+            LOG.info("Files distributed for PerfTest: {}", perfTest.getId());
 
-				singleConsole.setReportPath(perfTestService.getReportFileDirectory(perfTest));
-				LOG.info("Report path set for PerfTest: {}", perfTest.getId());
+            singleConsole.setReportPath(perfTestService.getReportFileDirectory(perfTest));
+            LOG.info("Report path set for PerfTest: {}", perfTest.getId());
 
-				runTestOn(perfTest, grinderProperties, checkCancellation(singleConsole));
-				LOG.info("Test run started for PerfTest: {}", perfTest.getId());
-			} catch (PerfTestPrepareException ex) {
-				LOG.error(format(perfTest, "Error while preparing a test : {} ", ex.getMessage()), ex);
-				perfTestService.markProgressAndStatusAndFinishTimeAndStatistics(perfTest, Status.STOP_BY_ERROR,
-					ex.getMessage());
-			} catch (SingleConsoleCancellationException ex) {
-				LOG.error(format(perfTest, "Error while preparing a single console : {} ", ex.getMessage()), ex);
-				doCancel(perfTest, requireNonNull(singleConsole));
-				notifyFinish(perfTest, StopReason.CANCEL_BY_USER);
-			} catch (Exception ex) {
-				LOG.error(format(perfTest, "Error while executing a test: {}", ex.getMessage()), ex);
-				doTerminate(perfTest, singleConsole, ex.getMessage());
-				notifyFinish(perfTest, StopReason.ERROR_WHILE_PREPARE);
-			}
-		}
+            runTestOn(perfTest, grinderProperties, checkCancellation(singleConsole));
+            LOG.info("Test run started for PerfTest: {}", perfTest.getId());
+        } catch (PerfTestPrepareException ex) {
+            LOG.error(format(perfTest, "Error while preparing a test : {} ", ex.getMessage()), ex);
+            perfTestService.markProgressAndStatusAndFinishTimeAndStatistics(perfTest, Status.STOP_BY_ERROR,
+                ex.getMessage());
+        } catch (SingleConsoleCancellationException ex) {
+            LOG.error(format(perfTest, "Error while preparing a single console : {} ", ex.getMessage()), ex);
+            doCancel(perfTest, requireNonNull(singleConsole));
+            notifyFinish(perfTest, StopReason.CANCEL_BY_USER);
+        } catch (Exception ex) {
+            LOG.error(format(perfTest, "Error while executing a test: {}", ex.getMessage()), ex);
+            doTerminate(perfTest, singleConsole, ex.getMessage());
+            notifyFinish(perfTest, StopReason.ERROR_WHILE_PREPARE);
+        }
+    }
 
 	/**
 	 * Delete cached distribution files, These are already in the agent cache directory.
