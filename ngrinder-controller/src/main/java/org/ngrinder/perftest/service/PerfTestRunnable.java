@@ -206,31 +206,41 @@ public class PerfTestRunnable implements ControllerConstants {
 	 * @param perfTest perftest instance;
 	 */
 	public void doTest(final PerfTest perfTest) {
-		SingleConsole singleConsole = null;
-		try {
-			GrinderProperties grinderProperties = perfTestService.prepareTest(perfTest);
-			singleConsole = startConsole(perfTest);
-			startAgentsOn(perfTest, grinderProperties, checkCancellation(singleConsole));
-			distributeFileOn(perfTest, checkCancellation(singleConsole));
-			singleConsole.setReportPath(perfTestService.getReportFileDirectory(perfTest));
-			runTestOn(perfTest, grinderProperties, checkCancellation(singleConsole));
-		} catch (PerfTestPrepareException ex) {
-			LOG.error(format(perfTest, "Error while preparing a test : {} ", ex.getMessage()));
-			perfTestService.markProgressAndStatusAndFinishTimeAndStatistics(perfTest, Status.STOP_BY_ERROR,
-				ex.getMessage());
-		} catch (SingleConsoleCancellationException ex) {
-			// In case of error, mark the occurs error on perftest.
-			LOG.error(format(perfTest, "Error while preparing a single console : {} ", ex.getMessage()));
-			doCancel(perfTest, requireNonNull(singleConsole));
-			notifyFinish(perfTest, StopReason.CANCEL_BY_USER);
-		} catch (Exception ex) {
-			// In case of error, mark the occurs error on perftest.
-			LOG.error(format(perfTest, "Error while executing a test: {}", ex.getMessage()));
-			LOG.debug("Stack Trace is : ", ex);
-			doTerminate(perfTest, singleConsole, ex.getMessage());
-			notifyFinish(perfTest, StopReason.ERROR_WHILE_PREPARE);
-		}
-	}
+        SingleConsole singleConsole = null;
+        try {
+            LOG.info("Starting test preparation for PerfTest: {}", perfTest.getId());
+
+            GrinderProperties grinderProperties = perfTestService.prepareTest(perfTest);
+            LOG.info("Test preparation completed for PerfTest: {}", perfTest.getId());
+
+            singleConsole = startConsole(perfTest);
+            LOG.info("Console started for PerfTest: {}", perfTest.getId());
+
+            startAgentsOn(perfTest, grinderProperties, checkCancellation(singleConsole));
+            LOG.info("Agents started for PerfTest: {}", perfTest.getId());
+
+            distributeFileOn(perfTest, checkCancellation(singleConsole));
+            LOG.info("Files distributed for PerfTest: {}", perfTest.getId());
+
+            singleConsole.setReportPath(perfTestService.getReportFileDirectory(perfTest));
+            LOG.info("Report path set for PerfTest: {}", perfTest.getId());
+
+            runTestOn(perfTest, grinderProperties, checkCancellation(singleConsole));
+            LOG.info("Test run started for PerfTest: {}", perfTest.getId());
+        } catch (PerfTestPrepareException ex) {
+            LOG.error(format(perfTest, "Error while preparing a test : {} ", ex.getMessage()), ex);
+            perfTestService.markProgressAndStatusAndFinishTimeAndStatistics(perfTest, Status.STOP_BY_ERROR,
+                ex.getMessage());
+        } catch (SingleConsoleCancellationException ex) {
+            LOG.error(format(perfTest, "Error while preparing a single console : {} ", ex.getMessage()), ex);
+            doCancel(perfTest, requireNonNull(singleConsole));
+            notifyFinish(perfTest, StopReason.CANCEL_BY_USER);
+        } catch (Exception ex) {
+            LOG.error(format(perfTest, "Error while executing a test: {}", ex.getMessage()), ex);
+            doTerminate(perfTest, singleConsole, ex.getMessage());
+            notifyFinish(perfTest, StopReason.ERROR_WHILE_PREPARE);
+        }
+    }
 
 	/**
 	 * Delete cached distribution files, These are already in the agent cache directory.
